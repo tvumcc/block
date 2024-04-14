@@ -13,6 +13,12 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-add_executable(${CMAKE_PROJECT_NAME} src/main.cpp)
+add_executable(${CMAKE_PROJECT_NAME} 
+	src/main.cpp
+	src/physics_world.cpp
+	src/collision_object.cpp
+	src/rectangle.cpp
+	src/vec2.cpp
+)
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE sfml-window sfml-audio sfml-main sfml-network sfml-graphics sfml-system -static-libgcc -static-libstdc++)
