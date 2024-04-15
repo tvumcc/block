@@ -1,7 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <float.h>
 
 #include "physics_world.hpp"
+#include "rectangle.hpp"
 
 #define BG_COLOR sf::Color::Black
 
@@ -9,70 +11,72 @@ int main() {
 	sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(1920u, 1080u), "Blocks");
     window.setFramerateLimit(144);
 
+	double winWidth = window.getSize().x;
+	double winHeight = window.getSize().y;
+	std::cout << "Window Width: " << winWidth << ", Window Height: " << winHeight << std::endl;
+
 	sf::View view = sf::View(sf::FloatRect(0.0f, 0.0f, 1920.0f, 1080.0f));
 	window.setView(view);
 
-	sf::RectangleShape rect = sf::RectangleShape(sf::Vector2<float>(100,100));
-	rect.setFillColor(sf::Color::Green);
-	rect.setOutlineColor(sf::Color::White);
-	rect.setOutlineThickness(2.0f);
-	rect.setPosition(sf::Vector2<float>(100,100));
-
-	bool clicked = false;
-	float lastX = sf::Mouse::getPosition(window).x;
-	float lastY = sf::Mouse::getPosition(window).y;
-	float dx;
-	float dy;
-
-	Rectangle obj = Rectangle(100.0, 100.0);
-	obj.position = Vec2(100.0, 200.0);
-	obj.red = 255.0; obj.blue = 255.0;
+	Rectangle obj = Rectangle(500.0, 600.0, 10.0, 100.0, 100.0);
+	obj.color = sf::Color(0, 255, 0);
+	obj.useGravity = true;
 	obj.velocity.x = 20.0;
-	obj.mass = 10.0;
-	obj.e = 1.0;
+	obj.restitution = 0.95;
 
-	Rectangle obj2 = Rectangle(100.0, 100.0);
-	obj2.position = Vec2(800.0, 190.0);
-	obj2.red = 10.0; obj.blue = 10.0;
+	Rectangle obj2 = Rectangle(1500.0, 600.0, 10.0, 100.0, 200.0);
+	obj2.useGravity = true;
 	obj2.velocity.x = -10.0;
-	obj2.mass = 10.0;
-	obj2.e = 0.95;
+	obj2.restitution = 0.95;
+
+	Rectangle leftWall = Rectangle(-50.0, winHeight / 2.0, DBL_MAX, 100.0, winHeight);
+	leftWall.useGravity = false;
+	Rectangle rightWall = Rectangle(winWidth + 50.0, winHeight / 2.0, DBL_MAX, 100.0, winHeight);
+	rightWall.useGravity = false;
+	Rectangle topWall = Rectangle(winWidth / 2.0, -51.0, DBL_MAX, winWidth, 100.0);
+	topWall.useGravity = false;
+	Rectangle botWall = Rectangle(winWidth / 2.0, winHeight + 51.0, DBL_MAX, winWidth, 100.0);
+	botWall.useGravity = false;
+
+	leftWall.restitution = 0.95;
+	rightWall.restitution = 0.95;
+	topWall.restitution = 0.95;
+	botWall.restitution = 0.95;
+	leftWall.isStatic = true;
+	rightWall.isStatic = true;
+	topWall.isStatic = true;
+	botWall.isStatic = true;
+
 
 	PhysicsWorld ctx = PhysicsWorld();
-	ctx.addObject(obj);
-	ctx.addObject(obj2);
+	ctx.addObject(&obj);
+	ctx.addObject(&obj2);
+	ctx.addObject(&leftWall);
+	ctx.addObject(&rightWall);
+	ctx.addObject(&topWall);
+	ctx.addObject(&botWall);
 
 	sf::Clock clock;
 
     while (window.isOpen()) {
         for (auto event = sf::Event{}; window.pollEvent(event);) {
             if (event.type == sf::Event::Closed) {
-                window.close();
-            } else if (event.type == sf::Event::MouseButtonPressed) {
-				clicked = rect.getGlobalBounds().contains((sf::Vector2f)sf::Mouse::getPosition(window));
-			} else if (event.type == sf::Event::MouseButtonReleased) {
-				clicked = false;
+
+				window.close();
 			} else if (event.type == sf::Event::Resized)  {
 				window.setView(sf::View(sf::FloatRect(0.0f, 0.0f, event.size.width, event.size.height)));
+			} else if (event.type == sf::Event::KeyPressed) {
+				if (event.key.scancode == sf::Keyboard::Scan::H)
+					ctx.explodeRect(&obj, 10, 10);
 			}
         }
 
 		sf::Time dt = clock.restart();
 		window.clear(BG_COLOR);
 
-		dx = sf::Mouse::getPosition(window).x - lastX;
-		dy = sf::Mouse::getPosition(window).y - lastY;
-		lastX = sf::Mouse::getPosition(window).x;
-		lastY = sf::Mouse::getPosition(window).y;
-
-		if (clicked) rect.setPosition(rect.getPosition() + sf::Vector2f(dx, dy));
-
 		for (int i = 0; i < 100; i++) ctx.updateObjects(dt.asMilliseconds() / 10000.0);
 
 		ctx.drawObjects(window);
-
-		window.draw(rect);	
-
         window.display();
     }
 }
