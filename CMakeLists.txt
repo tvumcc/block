@@ -17,6 +17,7 @@ add_executable(${CMAKE_PROJECT_NAME}
 	src/main.cpp
 	src/physics_world.cpp
 	src/collision_object.cpp
+	src/collision.cpp
 	src/rectangle.cpp
 	src/vec2.cpp
 )

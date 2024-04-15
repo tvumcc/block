@@ -9,19 +9,33 @@ enum class CollisionShape {
 
 class CollisionObject {
 public:
+	// Mass of the object in kilograms
 	double mass;
+
+	// Determines the elasticity of the object. See: https://en.wikipedia.org/wiki/Coefficient_of_restitution
 	double restitution;
+
+	// Flag for acceleration due to gravity on this object
 	bool useGravity;
+
+	// Flag for preventing the movement of this object
 	bool isStatic;
+
+	// Flag for drawing the object to the screen
+	bool visible;
+
+	sf::Color color;
+
+	// Determines the shape of this object
 	CollisionShape shape;
 
+	// Vectors to describe the object's state in the physics world
 	Vec2 position;
 	Vec2 velocity;
 	Vec2 acceleration;
 	Vec2 force;
 	Vec2 impulse;
 
-	sf::Color color;
 
 	CollisionObject();
 	CollisionObject(double x, double y, double mass);
@@ -33,20 +47,6 @@ public:
 	void addImpulse(Vec2 v);
 	void resetForceImpulse();
 
+	// Draw this object to a SFML RenderWindow
 	virtual void draw(sf::RenderWindow& window) = 0;
-};
-
-class Collision {
-public:
-	CollisionObject* a;
-	CollisionObject* b;
-	bool collides;
-	Vec2 normal;
-	double depth;
-
-	Collision(CollisionObject* a, CollisionObject* b);
-	void resolve();
-	void computeCollision();
-
-	void Rectangle_vs_Rectangle();
 };

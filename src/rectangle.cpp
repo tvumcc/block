@@ -22,4 +22,3 @@ void Rectangle::draw(sf::RenderWindow& window) {
 	rect.setPosition(sf::Vector2<float>(position.x - width/2.0, position.y - height/2.0));
 	window.draw(rect);
 }
-
