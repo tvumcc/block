@@ -1,5 +1,8 @@
 #include <SFML/Graphics.hpp>
 
+#include "imgui.h"
+#include "imgui-SFML.h"
+
 #include "physics_world.hpp"
 #include "rectangle.hpp"
 
@@ -8,9 +11,10 @@
 int main() {
 	sf::RenderWindow window = sf::RenderWindow(sf::VideoMode(1900u, 1000u), "Blocks", sf::Style::Titlebar | sf::Style::Close);
 	window.setPosition(sf::Vector2i(0, 0));
-
 	window.setFramerateLimit(144);
-	
+
+	ImGui::SFML::Init(window);
+
 	double winWidth = window.getSize().x;
 	double winHeight = window.getSize().y;
 	sf::View view = sf::View(sf::FloatRect(0.0f, 0.0f, window.getSize().x, window.getSize().y));
@@ -32,6 +36,7 @@ int main() {
 
     while (window.isOpen()) {
         for (auto event = sf::Event{}; window.pollEvent(event);) {
+			ImGui::SFML::ProcessEvent(window, event);
             if (event.type == sf::Event::Closed) {
 				window.close();
 			} else if (event.type == sf::Event::Resized) {
@@ -43,10 +48,20 @@ int main() {
 
 		sf::Time dt = clock.restart();
 		window.clear(BG_COLOR);
+		ImGui::SFML::Update(window, dt);
 
 		ctx.update(dt.asMilliseconds());
-
 		ctx.drawObjects(window);
+
+		// Gui Stuff
+		ImGui::Begin("Test Window");
+		ImGui::Button("sup");
+		ImGui::End();
+		ImGui::EndFrame();
+
+		ImGui::SFML::Render(window);
         window.display();
     }
+
+	ImGui::SFML::Shutdown();
 }

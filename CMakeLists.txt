@@ -10,10 +10,22 @@ set(SFML_STATIC_LIBRARIES TRUE)
 add_subdirectory("lib/SFML")
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/lib/SFML/include
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui-sfml
+	${CMAKE_CURRENT_SOURCE_DIR}/lib/imgui
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
 add_executable(${CMAKE_PROJECT_NAME} 
+	# Dear ImGUI
+	lib/imgui/imgui.cpp
+	lib/imgui/imgui_widgets.cpp
+	lib/imgui/imgui_draw.cpp
+	lib/imgui/imgui_tables.cpp
+
+	# imgui-sfml
+	lib/imgui-sfml/imgui-SFML.cpp
+
+	# Project
 	src/main.cpp
 	src/physics_world.cpp
 	src/collision_object.cpp
