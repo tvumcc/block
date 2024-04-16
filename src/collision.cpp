@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 
 #include "collision.hpp"
 #include "rectangle.hpp"
@@ -21,12 +22,15 @@ void Collision::resolve() {
 		else if (a->isStatic) b->position += normal * depth;
 		else if (b->isStatic) a->position -= normal * depth;
 		else {
-			a->position -= normal * depth;
-			b->position += normal * depth;
+			double a_percent = 1.0 - (a->mass / (a->mass + b->mass));
+			double b_percent = 1.0 - (b->mass / (a->mass + b->mass));
+
+			a->position -= normal * (depth * 0.5);
+			b->position += normal * (depth * 0.5);
 		}
 
 
-		double e = (a->restitution + b->restitution) / 2.0;
+		double e = std::min(a->restitution, b->restitution);
 		double numerator = (-(1.0 + e) * (a->velocity - b->velocity)) * normal;
 		double denominator = 1.0 / a->mass + 1.0 / b->mass;
 
@@ -72,7 +76,7 @@ void Collision::Rectangle_vs_Rectangle() {
 
 
 		depth = len(normal);
-		normal.normalize();
+		if (depth != 0.0) normal.normalize();
 
 		// Flip normal depending on the orientation of the two objects
 		Vec2 posVector = b->position - a->position;

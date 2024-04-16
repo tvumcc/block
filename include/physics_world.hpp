@@ -18,7 +18,7 @@ public:
 	double deltaTimeDivisor;
 
 	// Acceleration due to gravity in m/s^2
-	const double gravity = 9.81;
+	double gravity;
 
 	// Stores collision pairs to be resolved
 	std::vector<Collision> collisions;
@@ -46,4 +46,7 @@ public:
 
 	// Draws all visible objects to a SFML RenderWindow
 	void drawObjects(sf::RenderWindow& window);
+
+	// Returns the object at the specified location
+	CollisionObject* selectObject(double x, double y);
 };

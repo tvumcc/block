@@ -8,6 +8,7 @@ CollisionObject::CollisionObject()
 	useGravity = true;
 	isStatic = false;
 	visible = true;
+	explodable = true;
 	shape = CollisionShape::None;
 }
 
@@ -16,8 +17,8 @@ CollisionObject::CollisionObject(double x, double y, double mass) {
 	position = Vec2(x, y);
 }
 
-void CollisionObject::updatePosition(double deltaTime) {
-	acceleration = force / mass;
+void CollisionObject::updatePosition(double deltaTime, double gravity) {
+	acceleration = force / mass + Vec2(0.0, useGravity ? gravity : 0.0);
 	velocity += acceleration * deltaTime + impulse / mass;	
 	position += velocity * deltaTime;
 }

@@ -3,6 +3,7 @@
 Rectangle::Rectangle() {
 	this->width = 1.0;
 	this->height = 1.0;
+	shape = CollisionShape::Rectangle;
 }
 
 Rectangle::Rectangle(double x, double y, double mass, double width, double height) {

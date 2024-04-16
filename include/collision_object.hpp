@@ -24,6 +24,9 @@ public:
 	// Flag for drawing the object to the screen
 	bool visible;
 
+	// Flag for allowing explosion of this object
+	bool explodable;
+
 	sf::Color color;
 
 	// Determines the shape of this object
@@ -41,7 +44,7 @@ public:
 	CollisionObject(double x, double y, double mass);
 
 	// Update the object position using semi-implicit Euler integration
-	void updatePosition(double deltaTime);
+	void updatePosition(double deltaTime, double gravity);
 
 	void addForce(Vec2 v);
 	void addImpulse(Vec2 v);

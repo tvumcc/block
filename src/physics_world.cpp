@@ -1,10 +1,12 @@
 #include <cmath>
 #include <cfloat>
+#include <iostream>
 
 #include "physics_world.hpp"
 
 PhysicsWorld::PhysicsWorld(double windowWidth, double windowHeight, int stepsPerFrame, double deltaTimeDivisor) {
 	setupBounds(windowWidth, windowHeight);
+	gravity = 9.81;
 	this->stepsPerFrame = stepsPerFrame;
 	this->deltaTimeDivisor = deltaTimeDivisor;
 }
@@ -13,8 +15,7 @@ void PhysicsWorld::update(double deltaTime) {
 	deltaTime /= deltaTimeDivisor;
 	for (int step = 0; step < stepsPerFrame; step++)  {
 		for (int i = 0; i < objs.size(); i++) {
-			if (objs[i]->useGravity) objs[i]->addForce(Vec2(0.0, gravity * objs[i]->mass));
-			objs[i]->updatePosition(deltaTime);
+			objs[i]->updatePosition(deltaTime, gravity);
 			objs[i]->resetForceImpulse();
 		}
 		detectCollisions();
@@ -45,25 +46,32 @@ void PhysicsWorld::addObject(CollisionObject* obj) {
 }
 
 void PhysicsWorld::setupBounds(double windowWidth, double windowHeight) {
-	leftWall = Rectangle(-50.0, windowHeight/ 2.0, DBL_MAX, 100.0, windowHeight);
+	double thickness = 1000.0;
+
+	leftWall = Rectangle(-thickness / 2.0, windowHeight/ 2.0, DBL_MAX, thickness, windowHeight);
 	leftWall.useGravity = false;
 	leftWall.isStatic = true;
 	leftWall.visible = false;
 
-	rightWall = Rectangle(windowWidth + 50.0, windowHeight / 2.0, DBL_MAX, 100.0, windowHeight);
+	rightWall = Rectangle(windowWidth + thickness / 2.0, windowHeight / 2.0, DBL_MAX, thickness, windowHeight);
 	rightWall.useGravity = false;
 	rightWall.isStatic = true;
 	rightWall.visible = false;
 
-	topWall = Rectangle(windowWidth / 2.0, -51.0, DBL_MAX, windowWidth, 100.0);
+	topWall = Rectangle(windowWidth / 2.0, -thickness / 2.0, DBL_MAX, windowWidth, thickness);
 	topWall.useGravity = false;
 	topWall.isStatic = true;
 	topWall.visible = false;
 
-	botWall = Rectangle(windowWidth / 2.0, windowHeight + 51.0, DBL_MAX, windowWidth, 100.0);
+	botWall = Rectangle(windowWidth / 2.0, windowHeight + thickness / 2.0, DBL_MAX, windowWidth, thickness);
 	botWall.useGravity = false;
 	botWall.isStatic = true;
 	botWall.visible = false;
+
+	leftWall.restitution = 0.25;
+	rightWall.restitution = 0.25;
+	topWall.restitution = 0.25;
+	botWall.restitution = 0.25;
 
 	addObject(&leftWall);
 	addObject(&rightWall);
@@ -72,6 +80,10 @@ void PhysicsWorld::setupBounds(double windowWidth, double windowHeight) {
 }
 
 void PhysicsWorld::explodeRect(CollisionObject* rectangle, int n, int m) {
+	if (!rectangle->explodable) {
+		return;
+	}
+
 	for (int i = 0; i < objs.size(); i++) {
 		if (objs[i]->shape == CollisionShape::Rectangle && objs[i] == rectangle) {
 			objs.erase(objs.begin()+i);	
@@ -90,11 +102,12 @@ void PhysicsWorld::explodeRect(CollisionObject* rectangle, int n, int m) {
 					Vec2 newVelocity = Vec2(rect->position - theRect->position);
 					double dist = len(newVelocity);
 					newVelocity.normalize();
-					newVelocity *= 2.0 * sqrt(dist);
+					newVelocity *= 10.0 * sqrt(dist) * rect->mass;
 					rect->addImpulse(newVelocity);
 					rect->useGravity = true;
 					rect->color = theRect->color;
-					rect->restitution = 0.4;
+					rect->restitution = 0.1;
+					rect->explodable = false;
 					
 					objs.push_back(rect);
 				}
@@ -103,4 +116,23 @@ void PhysicsWorld::explodeRect(CollisionObject* rectangle, int n, int m) {
 			break;
 		}
 	}
+}
+
+CollisionObject* PhysicsWorld::selectObject(double x, double y) {
+	for (int i = 0; i < objs.size(); i++) {
+		if (objs[i]->isStatic) continue;
+		if (objs[i]->shape == CollisionShape::Rectangle) {
+			Rectangle* rect = (Rectangle*)objs[i];
+
+			double x_min = rect->position.x - rect->width / 2.0;
+			double x_max = rect->position.x + rect->width / 2.0;
+			double y_min = rect->position.y - rect->height / 2.0;
+			double y_max = rect->position.y + rect->height / 2.0;
+
+			if (x > x_min && x < x_max && y > y_min && y < y_max){
+				return objs[i];
+			}	
+		}
+	}
+	return nullptr;
 }
